@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ask Prakriti — click-through mockup</title>
+<style>
+  :root{
+    /* app chrome (unchanged) */
+    --g:#1f7a3f; --g-d:#14602f; --g-m:#2e8b4f; --g-l:#e8f5ec;
+    /* Prakriti violet */
+    --v:#6d4aff; --v-d:#5333e0; --v-m:#7c5cff;
+    --v-bg:#f5f2fe; --v-bg2:#ede7fb; --v-ln:#e2daf8; --v-ln2:#cfc2f3;
+    --ink:#1b1c28; --ink2:#5c5f72; --ink3:#8e91a3;
+    --line:#e6e7ee; --bg:#f4f6f5;
+    --amber:#a06a05; --amber-bg:#fdf6e8; --amber-ln:#f0e0be;
+    --blue:#2a5fa8; --blue-bg:#eef3fc; --red:#c0392b;
+    --r:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+
+  /* ---------------- app backdrop ---------------- */
+  .app{height:100vh;display:flex;flex-direction:column;overflow:hidden}
+  .topbar{height:56px;background:var(--g);color:#fff;display:flex;align-items:center;padding:0 20px;gap:16px;flex:0 0 auto}
+  .topbar .brand{font-weight:600;font-size:16px}
+  .topbar .ctx{margin:0 auto;font-size:14.5px}
+  .topbar .avatar{width:30px;height:30px;border-radius:50%;background:#fff;color:var(--g);display:grid;place-items:center;font-weight:700;font-size:13px}
+  .shell{flex:1;display:flex;min-height:0}
+  .side{width:222px;background:var(--g);color:#eaf5ee;padding:8px 0;font-size:13.5px;flex:0 0 auto;overflow:hidden}
+  .side .grp{padding:12px 18px 6px;font-size:11px;letter-spacing:.9px;color:#bfe0cb}
+  .side .item{padding:9px 18px;display:flex;gap:10px;align-items:center;opacity:.92}
+  .side .item.active{background:var(--g-m);opacity:1;font-weight:500}
+  .side .dot{width:14px;height:14px;border-radius:3px;background:rgba(255,255,255,.35)}
+  .main{flex:1;background:#fff;overflow:auto;min-width:0}
+  .page-head{display:flex;align-items:center;justify-content:space-between;padding:20px 24px 12px}
+  .page-head h1{margin:0;font-size:26px;font-weight:500}
+  .btn-p{background:var(--g);color:#fff;border:0;border-radius:22px;padding:10px 18px;font-size:14px}
+  .toolbar{display:flex;align-items:center;gap:12px;padding:10px 24px;background:#fafbfa;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .search{flex:0 0 320px;border:1px solid var(--line);border-radius:20px;padding:8px 14px;color:var(--ink3);font-size:13.5px;background:#fff}
+  .totals{margin-left:auto;font-size:12.5px;color:var(--ink2)}
+  .chips{display:flex;gap:10px;flex-wrap:wrap;padding:14px 24px 6px}
+  .chip{background:#eef1ef;border-radius:18px;padding:7px 14px;font-size:13px;color:var(--ink2)}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th{text-align:left;padding:14px 16px;background:#f4f6f5;color:var(--ink2);font-weight:600;font-size:12.5px;border-bottom:1px solid var(--line);white-space:nowrap}
+  td{padding:16px;border-bottom:1px solid #eef1ef;vertical-align:top}
+  .nm{font-weight:500}.ph{color:var(--ink3);font-size:12.5px}
+  .tag{display:inline-block;background:#dff0e6;color:#1d6b3c;border-radius:12px;padding:4px 10px;font-size:11.5px;margin-right:6px}
+  .loc{color:#1a73e8}
+  .status{display:inline-block;background:#e2ecfb;color:var(--blue);border-radius:12px;padding:4px 10px;font-size:11px}
+
+  /* ---------------- bubble ---------------- */
+  .bubble{position:fixed;right:26px;bottom:26px;z-index:70;width:54px;height:54px;border-radius:50%;
+    border:1.5px solid var(--v-ln2);background:#fff;cursor:pointer;display:grid;place-items:center;
+    box-shadow:0 6px 20px rgba(80,50,200,.18),0 2px 6px rgba(80,50,200,.10);transition:transform .18s,box-shadow .18s}
+  .bubble:hover{transform:scale(1.07);box-shadow:0 10px 28px rgba(80,50,200,.26)}
+  .bubble .ring{position:absolute;inset:-5px;border-radius:50%;border:1.5px solid rgba(109,74,255,.4);animation:ping 2.6s ease-out infinite}
+  @keyframes ping{0%{transform:scale(.9);opacity:.8}70%{transform:scale(1.22);opacity:0}100%{opacity:0}}
+  .bubble.hidden{display:none}
+  .lhint{position:fixed;right:92px;bottom:40px;z-index:69;background:#fff;border:1px solid var(--line);
+    box-shadow:0 6px 18px rgba(20,30,60,.10);border-radius:20px;padding:8px 14px;font-size:13px;color:var(--ink);
+    opacity:0;transform:translateX(6px);transition:.2s;pointer-events:none;white-space:nowrap}
+  .bubble:hover + .lhint,.lhint.show{opacity:1;transform:none}
+
+  /* ---------------- docked panel ---------------- */
+  .panel{position:fixed;right:26px;bottom:92px;z-index:75;width:404px;height:min(600px,calc(100vh - 140px));
+    background:#fff;border:1px solid var(--v-ln);border-top:2.5px solid var(--v);border-radius:12px;
+    box-shadow:0 20px 52px rgba(40,20,110,.22),0 4px 12px rgba(40,20,110,.08);
+    display:none;flex-direction:column;overflow:hidden;transform-origin:bottom right}
+  .panel.open{display:flex;animation:pop .22s cubic-bezier(.2,.85,.25,1)}
+  @keyframes pop{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}
+  .panel.big{width:min(780px,calc(100vw - 52px));height:min(84vh,780px)}
+
+  .phead{display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--v-bg);border-bottom:1px solid var(--v-ln)}
+  .leafmark{width:26px;height:26px;flex:0 0 auto}
+  .ptitle{display:flex;align-items:center;gap:5px;font-size:15px;font-weight:700;letter-spacing:-.1px;line-height:1.15}
+  .infowrap{position:relative;display:inline-flex;align-items:center}
+  .info{width:13px;height:13px;color:var(--ink3);cursor:help}
+  .infowrap:hover .info{color:var(--v)}
+  .tip{position:absolute;top:22px;left:-8px;z-index:5;width:250px;background:#23243a;color:#fff;
+    border-radius:9px;padding:10px 12px;font-size:11.4px;line-height:1.55;font-weight:400;letter-spacing:0;
+    box-shadow:0 10px 26px rgba(20,10,60,.28);opacity:0;visibility:hidden;transform:translateY(-3px);
+    transition:.16s;pointer-events:none}
+  .tip::before{content:"";position:absolute;top:-4px;left:12px;width:8px;height:8px;background:#23243a;transform:rotate(45deg)}
+  .tip b{font-weight:700}
+  .tip .row2{margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,.16);color:#c9cbe0}
+  .infowrap:hover .tip{opacity:1;visibility:visible;transform:none}
+  .psub{font-size:11.5px;color:var(--ink2);margin-top:1px}
+  .pacts{margin-left:auto;display:flex;gap:2px}
+  .pacts button{width:28px;height:28px;border:0;background:transparent;border-radius:7px;cursor:pointer;
+    color:var(--ink2);display:grid;place-items:center}
+  .pacts button:hover{background:rgba(109,74,255,.1);color:var(--v-d)}
+
+  .modes{display:none;gap:6px;padding:9px 16px 0}
+  .panel.big .modes{display:flex}
+  .mode{border:1px solid var(--line);background:#fff;border-radius:16px;padding:6px 13px;font-size:12.4px;
+    cursor:pointer;font-family:inherit;color:var(--ink2)}
+  .mode:hover{border-color:var(--v-ln2);color:var(--v-d)}
+  .mode.on{background:var(--v-bg2);border-color:var(--v-ln2);color:var(--v-d);font-weight:600}
+
+  .body{flex:1;overflow:auto;padding:15px 16px 6px}
+
+  /* empty state */
+  .eh{font-size:14.5px;font-weight:700;margin:0 0 11px;letter-spacing:-.1px}
+  .qlist{border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .qrow{display:flex;align-items:center;gap:11px;width:100%;text-align:left;border:0;background:#fff;
+    border-bottom:1px solid #f0f0f5;padding:11px 12px;cursor:pointer;font-family:inherit;transition:.12s}
+  .qlist .qrow:last-child{border-bottom:0}
+  .qrow:hover{background:var(--v-bg)}
+  .qrow .n{width:20px;height:20px;border-radius:6px;background:#f2f0fa;color:var(--ink3);display:grid;place-items:center;
+    font-size:11px;font-weight:700;flex:0 0 auto}
+  .qrow:hover .n{background:var(--v);color:#fff}
+  .qrow .q{flex:1;font-size:12.9px;line-height:1.4;color:var(--ink)}
+  .qrow .ar{color:#c3c5d2;flex:0 0 auto;display:grid;place-items:center}
+  .qrow:hover .ar{color:var(--v)}
+  .morebtn{width:100%;border:1px dashed var(--v-ln2);background:#fff;color:var(--v-d);border-radius:10px;
+    padding:9px;font-size:12.2px;cursor:pointer;font-family:inherit;margin-top:9px}
+  .morebtn:hover{background:var(--v-bg)}
+  .themes{margin-top:14px;display:none}
+  .panel.big .themes{display:block}
+  .tchip{border:1px solid var(--line);background:#fff;border-radius:15px;padding:6px 12px;font-size:12.2px;
+    margin:0 6px 6px 0;cursor:pointer;font-family:inherit;color:var(--ink2)}
+  .tchip:hover{border-color:var(--v-ln2);color:var(--v-d);background:var(--v-bg)}
+  .tchip.on{background:var(--v-bg2);border-color:var(--v-ln2);color:var(--v-d);font-weight:600}
+  .tlist{margin-top:9px;animation:slide .2s ease}
+  @keyframes slide{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+  .sug{display:block;width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:9px;
+    padding:9px 12px;font-size:12.5px;margin-bottom:6px;cursor:pointer;font-family:inherit;line-height:1.4;color:var(--ink)}
+  .sug:hover{border-color:var(--v-ln2);background:var(--v-bg);color:var(--v-d)}
+
+  /* messages */
+  .msg{margin-bottom:13px}
+  .msg.user{display:flex;justify-content:flex-end}
+  .msg.user .txt{background:var(--v-bg2);color:var(--ink);border-radius:11px;padding:9px 12px;max-width:88%;
+    font-size:12.9px;line-height:1.45}
+  .msg.user .vtag{display:block;font-size:9.8px;color:var(--v-d);margin-bottom:3px;font-weight:600;letter-spacing:.2px}
+  .ans{border:1px solid var(--v-ln);border-radius:11px;padding:13px 14px;background:#fff}
+  .ans .lead{margin:0 0 10px;font-size:12.9px;line-height:1.55}
+  .ans .h{font-weight:700;font-size:11.4px;letter-spacing:.4px;color:var(--v-d);margin:12px 0 6px;text-transform:uppercase}
+  .ans ol,.ans ul{margin:0 0 8px;padding-left:17px;font-size:12.7px;line-height:1.55}
+  .ans li{margin-bottom:5px}
+  .ans ul ul{margin:5px 0 0}
+  .ans p{margin:0 0 8px;font-size:12.7px;line-height:1.55}
+  .ans b{font-weight:700}
+  .callout{border-left:2.5px solid var(--amber-ln);background:var(--amber-bg);padding:8px 11px;border-radius:0 7px 7px 0;
+    font-size:12.2px;line-height:1.5;margin:9px 0}
+  .callout b{color:var(--amber)}
+  .esc{border-left:2.5px solid #cfdcf3;background:var(--blue-bg);padding:8px 11px;border-radius:0 7px 7px 0;
+    font-size:12.2px;line-height:1.5;margin:9px 0}
+  .esc b{color:var(--blue)}
+  .cite{font-size:10.5px;color:var(--ink3);margin-top:11px;padding-top:9px;border-top:1px dashed var(--line)}
+  .cite b{color:var(--ink2);font-weight:600}
+  .fbrow{display:flex;align-items:center;gap:7px;margin-top:9px}
+  .fbq{font-size:11.2px;color:var(--ink3)}
+  .thumb{width:26px;height:26px;border-radius:8px;border:1px solid var(--line);background:#fff;cursor:pointer;
+    display:grid;place-items:center;color:#9b9eae;transition:.14s;padding:0}
+  .thumb:hover{border-color:var(--v-ln2);color:var(--v-d);background:var(--v-bg)}
+  .thumb svg{width:14px;height:14px}
+  .thumb.up.on{background:var(--v-bg2);border-color:var(--v);color:var(--v-d)}
+  .thumb.down.on{background:#fdeeec;border-color:#e8b4ae;color:var(--red)}
+  .thx{font-size:11.2px;color:var(--v-d);display:none}
+  .thx.on{display:inline}
+  .copyb{margin-left:auto;border:1px solid var(--line);background:#fff;border-radius:7px;height:26px;padding:0 10px;
+    cursor:pointer;font-size:11px;color:var(--ink2);font-family:inherit}
+  .copyb:hover{border-color:var(--v-ln2);color:var(--v-d)}
+  .related{margin-top:10px}
+  .related .rl{font-size:10.5px;color:var(--ink3);margin-bottom:6px}
+  .related button{border:1px solid var(--line);background:#fff;border-radius:13px;padding:5px 10px;font-size:11.4px;
+    margin:0 5px 5px 0;cursor:pointer;font-family:inherit;color:var(--ink2)}
+  .related button:hover{border-color:var(--v-ln2);background:var(--v-bg);color:var(--v-d)}
+
+  /* status pill */
+  .statusbar{display:none;padding:8px 16px 12px}
+  .statusbar.on{display:block;animation:fadein .22s}
+  @keyframes fadein{from{opacity:0}to{opacity:1}}
+  .spill{display:inline-flex;align-items:center;gap:9px;background:var(--v-bg);border-radius:16px;padding:7px 13px 7px 11px;max-width:100%}
+  .sdots{display:flex;gap:3.5px;flex:0 0 auto}
+  .sdots i{width:5px;height:5px;border-radius:50%;background:var(--v);animation:bob 1.25s infinite}
+  .sdots i:nth-child(2){background:var(--v-m);animation-delay:.18s}
+  .sdots i:nth-child(3){background:#b9a6f7;animation-delay:.36s}
+  @keyframes bob{0%,65%,100%{transform:translateY(0);opacity:.45}32%{transform:translateY(-3.5px);opacity:1}}
+  .stxt{font-size:12.2px;color:var(--ink2)}
+  .stxt span{display:inline-block;animation:swap .32s cubic-bezier(.2,.8,.2,1)}
+  @keyframes swap{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+  /* limit */
+  .limit{border:1px solid var(--amber-ln);background:var(--amber-bg);border-radius:11px;padding:12px 13px;margin-bottom:12px}
+  .limit .t{font-size:12.5px;font-weight:700;margin-bottom:3px}
+  .limit .d{font-size:11.8px;color:var(--ink2);line-height:1.5}
+  .limit .row{margin-top:10px;display:flex;gap:7px}
+  .limit .row button{border:0;background:var(--v);color:#fff;border-radius:8px;padding:7px 13px;font-size:12px;cursor:pointer;font-family:inherit}
+  .limit .row button.ghost{background:#fff;color:var(--ink2);border:1px solid var(--line)}
+
+  /* composer */
+  .composer{padding:0 14px 13px}
+  .cbox{display:flex;align-items:flex-end;gap:8px;border:1px solid var(--line);border-radius:11px;
+    padding:7px 7px 7px 13px;background:#fff;transition:.16s}
+  .cbox:hover{border-color:var(--v-ln2)}
+  .cbox:focus-within{border-color:var(--v-m);box-shadow:0 0 0 3px rgba(109,74,255,.11)}
+  .cbox textarea{flex:1;border:0;outline:0;resize:none;font-family:inherit;font-size:12.9px;line-height:1.5;
+    max-height:80px;padding:6px 0;background:transparent;color:var(--ink)}
+  .cbox textarea::placeholder{color:#a2a5b5}
+  .mic{width:30px;height:30px;border-radius:8px;border:0;background:transparent;color:var(--ink3);cursor:pointer;
+    display:grid;place-items:center;flex:0 0 auto}
+  .mic:hover{background:var(--v-bg);color:var(--v-d)}
+  .mic.live{background:#fdeaea;color:var(--red);animation:mp 1.3s infinite}
+  @keyframes mp{0%,100%{box-shadow:0 0 0 0 rgba(192,57,43,.32)}50%{box-shadow:0 0 0 6px rgba(192,57,43,0)}}
+  .send{width:31px;height:31px;border-radius:50%;border:1.5px solid var(--v-ln2);background:#fff;color:var(--v);
+    cursor:pointer;display:grid;place-items:center;flex:0 0 auto;transition:.15s}
+  .send:not(:disabled):hover{background:var(--v);color:#fff;border-color:var(--v)}
+  .send:disabled{border-color:#e6e7ee;color:#c8cad6;cursor:not-allowed}
+  .cfoot{display:flex;align-items:center;gap:8px;margin-top:7px;font-size:10.5px;color:var(--ink3)}
+  .langs{display:flex;gap:4px;margin-left:auto}
+  .langs span{border:1px solid var(--line);border-radius:10px;padding:2px 7px}
+  .langs span.on{background:var(--v-bg2);border-color:var(--v-ln2);color:var(--v-d);font-weight:600}
+
+  /* voice sheet */
+  .voice{position:absolute;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);padding:18px;
+    display:none;flex-direction:column;align-items:center;gap:11px;border-radius:0 0 11px 11px}
+  .voice.open{display:flex}
+  .wave{display:flex;align-items:flex-end;gap:3.5px;height:36px}
+  .wave i{width:4px;background:var(--v-m);border-radius:3px;animation:w .9s ease-in-out infinite}
+  @keyframes w{0%,100%{height:7px}50%{height:33px}}
+  .voice .lbl{font-size:12px;color:var(--ink2)}
+  .voice .det{font-size:10.5px;color:var(--v-d);background:var(--v-bg2);border-radius:11px;padding:3px 9px;visibility:hidden}
+  .voice .det.on{visibility:visible}
+  .voice .partial{font-size:14px;font-weight:500;min-height:20px;text-align:center;max-width:84%}
+  .voice .acts2{display:flex;gap:8px}
+  .voice .acts2 button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 15px;font-size:12px;cursor:pointer;font-family:inherit}
+  .voice .acts2 .go{background:var(--v);color:#fff;border-color:var(--v)}
+
+  .notes{position:fixed;left:18px;bottom:18px;z-index:90;display:flex;gap:7px;flex-wrap:wrap;max-width:56vw}
+  .notes button{border:1px solid var(--line);background:#fff;border-radius:18px;padding:7px 13px;font-size:12px;
+    cursor:pointer;box-shadow:0 4px 14px rgba(20,30,60,.08);font-family:inherit}
+  .notes button:hover{border-color:var(--v-ln2);color:var(--v-d)}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="topbar">
+    <span style="font-size:18px">☰</span><span class="brand">BiofuelCircle</span>
+    <span class="ctx">📍 Gokavaram Biomass Bank, Rajahmundry ⌄</span><span>🔔</span><span class="avatar">G</span>
+  </div>
+  <div class="shell">
+    <div class="side">
+      <div class="item"><span class="dot"></span>Home</div>
+      <div class="grp">MASTER DATA</div>
+      <div class="item active"><span class="dot"></span>Agri-Partners</div>
+      <div class="item"><span class="dot"></span>Equipments</div>
+      <div class="item"><span class="dot"></span>Crop/Deal Ids</div>
+      <div class="grp">BIOMASS</div>
+      <div class="item"><span class="dot"></span>Service Deals</div>
+      <div class="item"><span class="dot"></span>Product Deals</div>
+      <div class="item"><span class="dot"></span>Operations</div>
+      <div class="item"><span class="dot"></span>Deliveries</div>
+      <div class="grp">FOM</div>
+      <div class="item"><span class="dot"></span>Deliveries</div>
+      <div class="item"><span class="dot"></span>Prospects</div>
+      <div class="grp">SETTLEMENT</div>
+      <div class="item"><span class="dot"></span>Inventory</div>
+    </div>
+    <div class="main">
+      <div class="page-head"><h1>Agri-Partner</h1><button class="btn-p">+ Agri-Partner</button></div>
+      <div class="toolbar"><span class="chip">⌃ Filters 0</span>
+        <div class="search">🔍 Agri_partner Id, Name, contact no</div>
+        <span class="totals">Total Acreage: 7,243.50 | Total Farmers: 728</span></div>
+      <div class="chips"><span class="chip">All Valid ⌄</span><span class="chip">All Tags ⌄</span><span class="chip">All Villages ⌄</span><span class="chip">All Crops ⌄</span></div>
+      <div class="chips" style="padding-top:0;padding-bottom:14px">
+        <span class="chip">No acreage (111)</span><span class="chip">Bank details missing (673)</span><span class="chip">Location flagged (271)</span></div>
+      <table><thead><tr><th>Partner ID</th><th>Name</th><th>Tags</th><th>Location (GIS Village)</th><th>Area/Crop</th><th>Distance</th><th>Status</th><th>Source</th></tr></thead>
+      <tbody id="rows"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- bubble -->
+<button class="bubble" id="bubble" onclick="openPanel()" aria-label="Ask Prakriti">
+  <span class="ring"></span>
+  <svg class="leafmark" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+    <defs><linearGradient id="lg1" x1="4" y1="26" x2="27" y2="6"><stop stop-color="#5333e0"/><stop offset="1" stop-color="#8b6bff"/></linearGradient></defs>
+    <path d="M27 5C13.5 4.4 5.5 10 5 19.2c-.2 3.6 1.3 6.4 3.4 8 .3-4.6 2.3-9.3 6-12.9-2.5 4.3-3.8 9-4 13.7 2.6.9 5.7.5 8.4-1.3C25 21.9 27.6 13.6 27 5z" fill="url(#lg1)"/>
+    <path d="M11.6 24.5c1.6-3.6 4.4-6.9 8-9" stroke="#fff" stroke-width="1.1" stroke-linecap="round" opacity=".85"/>
+  </svg>
+</button>
+<div class="lhint" id="lhint">Ask about how-to, corrections and escalation</div>
+
+<div class="notes">
+  <button onclick="demoAnswer()">Sample answer</button>
+  <button onclick="demoVoice()">Voice flow</button>
+  <button onclick="toggleBig()">Expand / collapse</button>
+  <button onclick="demoLimit()">5-question limit</button>
+  <button onclick="resetAll()">Reset</button>
+</div>
+
+<!-- panel -->
+<div class="panel" id="panel">
+  <div class="phead">
+    <svg class="leafmark" viewBox="0 0 32 32" fill="none">
+      <defs><linearGradient id="lg2" x1="4" y1="26" x2="27" y2="6"><stop stop-color="#5333e0"/><stop offset="1" stop-color="#8b6bff"/></linearGradient></defs>
+      <path d="M27 5C13.5 4.4 5.5 10 5 19.2c-.2 3.6 1.3 6.4 3.4 8 .3-4.6 2.3-9.3 6-12.9-2.5 4.3-3.8 9-4 13.7 2.6.9 5.7.5 8.4-1.3C25 21.9 27.6 13.6 27 5z" fill="url(#lg2)"/>
+      <path d="M11.6 24.5c1.6-3.6 4.4-6.9 8-9" stroke="#fff" stroke-width="1.1" stroke-linecap="round" opacity=".85"/></svg>
+    <div>
+      <div class="ptitle">Ask Prakriti
+        <span class="infowrap" tabindex="0">
+          <svg class="info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="9.5"/><path d="M12 11v5.5M12 7.6v.1" stroke-linecap="round"/></svg>
+          <span class="tip">Answers from the Biomass Bank SOP — <b>how-to, corrections and who to escalate to.</b>
+            <span class="row2">Five questions per chat. Nothing is saved.</span></span>
+        </span>
+      </div>
+      <div class="psub">Your how-to buddy</div>
+    </div>
+    <div class="pacts">
+      <button title="New chat" onclick="resetChat()" aria-label="New chat">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M20 11a8 8 0 1 0-2.3 6.3"/><path d="M20 5v6h-6"/></svg></button>
+      <button title="Expand" id="expandBtn" onclick="toggleBig()" aria-label="Expand">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 4h6v6M20 4l-7 7M10 20H4v-6M4 20l7-7"/></svg></button>
+      <button title="Close" onclick="closePanel()" aria-label="Close">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M5 5l14 14M19 5L5 19"/></svg></button>
+    </div>
+  </div>
+
+  <div class="modes" id="modeBar">
+    <button class="mode on" id="m-sop" onclick="setMode('sop')">How do I…</button>
+    <button class="mode" id="m-data" onclick="setMode('data')">My bank today</button>
+  </div>
+
+  <div class="body" id="body"></div>
+
+  <div class="statusbar" id="statusbar">
+    <div class="spill"><span class="sdots"><i></i><i></i><i></i></span><span class="stxt" id="stxt"></span></div>
+  </div>
+
+  <div class="composer">
+    <div class="cbox">
+      <textarea id="input" rows="1" placeholder="Ask in English, हिंदी, मराठी or Hinglish…" oninput="grow(this)" onkeydown="keys(event)"></textarea>
+      <button class="mic" id="mic" title="Ask by voice" onclick="startVoice()">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+          <rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></svg></button>
+      <button class="send" id="send" disabled onclick="send()" aria-label="Send">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 19V5M6 11l6-6 6 6"/></svg></button>
+    </div>
+    <div class="cfoot"><span id="hint">Enter to send</span>
+      <div class="langs"><span class="on">EN</span><span>हिं</span><span>मरा</span><span>Hinglish</span></div></div>
+  </div>
+
+  <div class="voice" id="voice">
+    <div class="wave" id="wave"></div>
+    <div class="lbl" id="vlbl">Listening… speak naturally, mixed languages are fine</div>
+    <div class="det" id="vdet">Detected: Hinglish</div>
+    <div class="partial" id="partial"></div>
+    <div class="acts2"><button onclick="cancelVoice()">Cancel</button><button class="go" onclick="acceptVoice()">Use this</button></div>
+  </div>
+</div>
+
+<script>
+/* ---------------- backdrop rows ---------------- */
+const rowsData=[
+ ["192633","K prasad","9542001484",["Sell Biomass","Buy FOM"],"Gokavaram","Gokavaram","7 Acres","Rice","3.31 km","Gramin Bandhu"],
+ ["192634","Indra","7702151605",["Sell Biomass","Buy FOM"],"Gokavaram","Gokavaram","2 Acres","Rice","3.09 km","Gramin Bandhu"],
+ ["245048","Peddakapu","8978422514",["Rent Tractor"],"Gokavaram, ANDHRA PR…","Kothapalle","5 Acres","Rice","9.32 km","Web"],
+ ["245049","Akhil naidu","8523852514",["Rent Tractor"],"Gokavaram, ANDHRA PR…","Kothapalle","N/A","","9.54 km","Web"],
+ ["245050","Sai","9989020514",["Rent Tractor","Driver"],"Gokavaram, ANDHRA PR…","Kothapalle","N/A","Rice","9.55 km","Web"],
+ ["244727","Srinu","9490993716",["Sell Biomass"],"Gokavaram, ANDHRA PR…","Kothapalle","7 Acres","Rice","7.38 km","Web"],
+ ["244505","Venkateswarulu","7330721390",["Sell Biomass"],"Gokavaram, ANDHRA PR…","Kothapalle","2 Acres","Rice","7.95 km","Web"]];
+document.getElementById('rows').innerHTML=rowsData.map(r=>`<tr><td>${r[0]}</td>
+ <td><div class="nm">${r[1]}</div><div class="ph">${r[2]} ⧉</div></td>
+ <td>${r[3].map(t=>`<span class="tag">${t}</span>`).join('')}</td>
+ <td><div class="loc">📍 ${r[4]}</div><div class="ph"><i>(${r[5]})</i></div></td>
+ <td>${r[6]}<div class="ph">${r[7]}</div></td><td>${r[8]}</td>
+ <td><span class="status">UPDATED</span></td><td>${r[9]}</td></tr>`).join('');
+
+/* ============ TOP 5 — real ask counts from support log ============ */
+const TOP5_SOP=[
+ {q:"Two farmers' bales came in one trolley — how do I record the inward?",who:"Warehouse Supervisor",n:3},
+ {q:"I updated farmers' locations yesterday and now they all show flagged. Why?",who:"Rural Sales Person",n:3},
+ {q:"By mistake I recorded the inward on the wrong farmer account.",who:"Warehouse Supervisor",n:2},
+ {q:"The invoice was verified by mistake. How can I unverify it?",who:"Cluster Manager",n:2},
+ {q:"Bank details error — passbook already attached to this account, Not Verified.",who:"Rural Sales Person",n:2}
+];
+const TOP5_DATA=[
+ {q:"Where do I see farmers and acreage in the 0–5, 5–10 and 10+ km bands?",who:"Cluster Manager",n:2},
+ {q:"Which agri-partners can I book today?",who:"Rural Sales Person",n:2},
+ {q:"Why is booking still at 0%?",who:"Cluster Manager",n:1},
+ {q:"How much acreage is blocked by missing bank details?",who:"Rural Sales Person",n:1},
+ {q:"Which tractors are inactive?",who:"Warehouse Supervisor",n:1}
+];
+/* themes ranked by total asks across all phrasings */
+const THEMES=[
+ {t:"Location flagging",n:7,qs:["I updated farmers' locations yesterday and now they all show flagged. Why?",
+   "We captured the exact field location but the farmer is still flagged.",
+   "I corrected it with lat-long several times and it's still flagged.",
+   "How do I get a flagged location off — does it overwrite at 9 PM?"]},
+ {t:"Inward recording",n:6,qs:["Two farmers' bales came in one trolley — how do I record the inward?",
+   "By mistake I recorded the inward on the wrong farmer account.",
+   "Two crops arriving together — how do I identify the product at the weighbridge?",
+   "Material inwarded but not reflecting on the platform.",
+   "Equipment ID isn't showing while creating a manual inward entry."]},
+ {t:"Onboarding partners",n:5,qs:["Should we onboard a petrol pump as an individual or a company?",
+   "How do I onboard a vendor?","We're taking biomass from an FPO — how do I record it?",
+   "A farmer has farms in two locations — how do I add both?",
+   "Agri-partner onboarded but not visible in my bank."]},
+ {t:"Bank details & invoices",n:4,qs:["Bank details error — passbook already attached to this account, Not Verified.",
+   "Invoice not generated for the transporter.","Cashflow not generating for deliveries — why?",
+   "How do I add vendor GST on the platform?"]},
+ {t:"Equipment & Carnot",n:4,qs:["I entered the wrong equipment ID during checkout.",
+   "Deal is active but I can't check out the trolley.","Tractor is active but shows 'no tractor found' at checkout.",
+   "How do I know whether the Carnot device is working?",
+   "Carnot isn't active — how do I verify the aggregator's work?",
+   "Where can I see equipment-wise output?"]},
+ {t:"Fuel & diesel",n:3,qs:["How do I record a manual fuel entry for a grabber?",
+   "I forgot to attach the fuel receipt in a manual fuel entry.",
+   "We gave diesel to a transporter without checkout — how do we recover it?",
+   "Manual fuel entry says 'Aggregator not found'.",
+   "A REPOS fuel entry was created wrong — what goes in the petrol pump field?"]},
+ {t:"Payments & deductions",n:3,qs:["₹500 was deducted as moisture deduction — how was that calculated?",
+   "How do I know what's paid and what's remaining for a partner?",
+   "Payments are showing Pending status.",
+   "Attendance was marked full day instead of half day by mistake.",
+   "A driver works day shift and night shift at different rates — how do we pay him?"]},
+ {t:"Scheduling",n:2,qs:["Can we filter scheduling by village?","'Add Schedule' option isn't showing.",
+   "Uprooting activity isn't showing while scheduling.","Agri-partner isn't showing in the scheduling tab.",
+   "How should the team schedule farmers in a clustered way?",
+   "'Show nearby unscheduled farmers' isn't showing all farmers."]},
+ {t:"Equipment rental",n:2,qs:["Do we need to record attendance for an equipment rental deal?",
+   "Where can I see fuel consumed by an aggregator's equipment and its cashflow?",
+   "How do I find a higher-HP tractor?"]}
+];
+let openTheme=null;
+
+/* ================= SOP knowledge base ================= */
+/* Each entry: keys, cite (SOP section), lead, body html, roles it is surfaced to */
+const KB=[
+{k:["fire safety","fire policy","smoke","temperature gun","stack temperature","aag"],cite:"SOP §5.7 Fire Safety · §4.1 Infrastructure Readiness · §2.7 Warehousing",
+ lead:"Fire safety at a biomass bank rests on daily temperature monitoring, immediate covering, and zero tolerance for ignition sources.",
+ b:`<div class="h">Daily monitoring</div><ul>
+ <li>Check stack temperature with a temperature gun <b>three times a day</b> — morning, afternoon, and evening.</li>
+ <li>Walk the site each morning and look for smoke, stack collapse, or water ingress from overnight.</li></ul>
+ <div class="h">Prevention</div><ul>
+ <li>Cover bales with tarpaulin <b>immediately</b> after stacking. Never leave bales exposed overnight.</li>
+ <li>Keep fire extinguishers and a water source accessible at all times.</li>
+ <li>Position sand buckets at regular intervals across the yard.</li>
+ <li>No smoking and no open flames anywhere on site.</li>
+ <li>High-moisture material goes to the high-risk zone for sun drying, not into stacking.</li></ul>
+ <div class="callout"><b>First sign of smoke = escalate immediately.</b> Do not wait for flames. High moisture inside stored bales drives anaerobic decomposition and methane buildup, and tarpaulin over compacted bales restricts oxygen flow, which accelerates it. Paddy straw is the highest-risk commodity because it is compact and moisture-retaining.</div>
+ <p>External risk to watch: neighbouring farmers burning stubble near the catchment.</p>`,
+ rel:["What moisture level do I reject at?","What are the stacking gap rules?","What extra checks apply during monsoon?"]},
+
+{k:["wrong farmer","wrong inward","inward on wrong","galat farmer"],cite:"SOP §8.1 Common Mistakes · §12 Escalation Matrix",
+ lead:"It depends entirely on whether the invoices have already been generated.",
+ b:`<div class="h">If neither invoice is generated yet</div>
+ <p>Both the farmer and aggregator invoices must be ungenerated. In that case you can fix it yourself:</p>
+ <ol><li>Cancel the inward entry.</li><li>Create a new manual inward entry with the correct farmer details.</li>
+ <li>Verify the equipment was checked out on that date, otherwise the manual entry will not accept a past date.</li></ol>
+ <div class="h">If invoices are already generated</div>
+ <p>You cannot fix this at bank level. Contact the Control Tower team — they void the wrong invoice and raise a correct manual invoice.</p>
+ <div class="esc"><b>Escalation:</b> Control Tower (Level 3). Anything involving voiding or unverifying an invoice sits with CT, not the Cluster Manager.</div>
+ <div class="callout"><b>Prevention:</b> at the weighbridge, confirm the farmer's mobile number before saving. If one trolley carries bales from two farmers, enter both mobile numbers with no spaces, commas, or special characters — the platform splits the record itself.</div>`,
+ rel:["An invoice was verified by mistake — what now?","How do I fix wrong attendance?","Who do I escalate to for a data fix?"]},
+
+{k:["moisture deduction","deduction calculation","moisture calculate","kitna katega"],cite:"SOP §9 Moisture Deduction Calculation",
+ lead:"Deduction applies only to moisture above the limit agreed in the deal, and it is taken as a quantity cut, not a rate cut.",
+ b:`<div class="h">Formula</div><ol>
+ <li>Excess moisture % = Actual moisture % − Acceptable moisture limit %</li>
+ <li>Quantity deduction (MT) = Total quantity × Excess moisture %</li>
+ <li>Deduction amount = Quantity deduction × Rate per MT</li></ol>
+ <div class="h">Worked example</div>
+ <p>10 MT supplied, acceptable limit 20%, actual moisture 25%, rate ₹1,000 per MT.</p>
+ <ul><li>Excess moisture: 25% − 20% = <b>5%</b></li><li>Quantity deduction: 10 × 5% = <b>0.5 MT</b></li>
+ <li>Deduction amount: 0.5 × ₹1,000 = <b>₹500</b></li><li>Material value: 10 × ₹1,000 = ₹10,000</li>
+ <li>Net payable: ₹10,000 − ₹500 = <b>₹9,500</b></li></ul>
+ <div class="callout">If actual moisture is within the acceptable limit, <b>no deduction applies at all</b> — there is no partial or sliding scale below the limit.</div>
+ <p>Adjustments like this must run through the platform's adjustment logic. Do not compute and apply them manually outside the platform.</p>`,
+ rel:["What moisture level do I reject at?","How is fuel advance recovery handled?","Why has a vendor invoice not generated?"]},
+
+{k:["location flag","flagged","why flagged","fix location","9 pm","gis mismatch"],cite:"SOP §10 Location Flagging & Validation · §6.2 Agri-Partner Management",
+ lead:"A location gets flagged automatically by a validation job that runs every night at 9:00 PM.",
+ b:`<div class="h">What the algorithm checks</div><ul>
+ <li>Whether the captured location falls inside a built-up or urban area.</li>
+ <li>Whether two locations sit within a 20-metre radius of each other — a likely duplicate.</li></ul>
+ <p>If either is true, the location is flagged. Anything you change during the day is processed after 9 PM and shows up the next morning, so same-day re-checks will look unchanged.</p>
+ <div class="h">How to avoid it</div><ul>
+ <li>Always use <b>'Use Current Location'</b> in the agri-partner profile.</li>
+ <li>Do <b>not</b> type lat-long coordinates or drop a Google Maps pin.</li>
+ <li>Capture the location while physically standing in the farmer's field.</li></ul>
+ <div class="h">If it stays flagged after correction</div>
+ <p>Edit the location, make a small change — updating the Address Line text is enough — and save again. That forces the algorithm to re-process it at 9 PM.</p>
+ <div class="callout"><b>Why it matters:</b> a flagged location means distance-from-bank and route planning cannot be trusted, so the partner stays out of scheduling even if everything else is complete.</div>`,
+ rel:["How do I add a second farm for the same farmer?","How do I onboard a new agri-partner?","Why can't I see a farmer in my bank?"]},
+
+{k:["forgot to check in","forgot to equipment","check-in equipment","checkin equipment","attendance forgot","full day","half day","wrong attendance"],cite:"SOP §8.4 · §8.6 · §5.4 Equipment Management",
+ lead:"Check the equipment in now and mark attendance based on the work that actually happened.",
+ b:`<ol><li>Check in the equipment.</li>
+ <li>Mark attendance as full day or half day according to actual work done — not according to what is convenient.</li></ol>
+ <div class="callout"><b>Prevention:</b> check in all equipment at the end of every day as part of day closing. Day closing should not be signed off until every machine is checked in with correct attendance.</div>
+ <div class="h">Related traps</div><ul>
+ <li><b>Wrong equipment ID at checkout:</b> check that equipment in by marking it Absent, then check out the correct one.</li>
+ <li><b>Wrong attendance saved</b> (full day instead of half day): this needs a backend update — CT voids the cashflow and raises a manual invoice for the correct half-day amount.</li>
+ <li><b>Carnot check:</b> verify the device is live via Ledger → Work Done (i icon) → scroll to the bottom → Last Carnot Active Ping.</li></ul>`,
+ rel:["Equipment isn't showing during checkout — why?","What is on the day closing checklist?","How do I check the Carnot ping?"]},
+
+{k:["not showing during checkout","equipment not showing","trolley not","tractor not found","tractor found","checkout problem","wrong equipment id","equipment id","can't check out","cant check out","couldn't check out","higher hp","hp tractor","four valves"],cite:"SOP §6.3 Equipment Management on Platform",
+ lead:"Almost always a mismatch between the activity selected and the equipment type.",
+ b:`<div class="h">Work through these in order</div><ol>
+ <li><b>Activity mismatch.</b> The activity you picked must match the equipment type. If the activity is 'slashing and raking', a hydraulic trolley will not appear — a trolley needs the <b>'pickup'</b> activity on the aggregation deal.</li>
+ <li><b>Tractor not found.</b> Check the machine was onboarded as type 'tractor', not 'trailer' or something else. Correct the equipment type if it is wrong.</li>
+ <li><b>Wrong bank location.</b> Equipment must be onboarded against the correct biomass bank to appear in your list.</li>
+ <li><b>Activity missing on the deal.</b> For uprooting, the agri-partner's aggregation deal must have the 'Uprooter' activity added.</li></ol>
+ <div class="callout">Looking for a specific tractor size? Search the HP value directly in the search bar — type <b>55</b> or <b>60</b>.</div>`,
+ rel:["I forgot to check in equipment — what now?","What's on the baler daily checklist?","Who approves an equipment transfer?"]},
+
+{k:["day closing","closing mismatch","receipts don't match","platform count"],cite:"SOP §5.6 Day Closing",
+ lead:"Day closing is a reconciliation, not a formality — physical receipts and platform records must match before you close.",
+ b:`<ol><li>Count the physical weighbridge receipts for the day.</li>
+ <li>Compare against the platform delivery count. They must match exactly.</li>
+ <li>If there is a mismatch: check weighbridge sync status first — look at the Wi-Fi gateway box light. Green means connected, red means disconnected. Then check for pending manual entries.</li>
+ <li>Verify all fuel issued matches fuel recorded on the platform.</li>
+ <li>Confirm every piece of equipment is checked in with correct attendance.</li></ol>
+ <div class="callout"><b>Do not close operations until platform and physical records match.</b> A mismatch carried overnight becomes a payment dispute later, because invoices generate off platform records.</div>
+ <div class="esc"><b>If the gateway light is red:</b> contact the weighbridge operator. If sync still fails after connectivity is restored, it is a platform issue — route via Control Tower to the dev team.</div>`,
+ rel:["Auto-inward isn't reflecting — what do I check?","I forgot to check in equipment — what now?","What is the fuel benchmark per MT?"]},
+
+{k:["fuel","diesel","litres per mt","benchmark","fuel receipt","without checkout"],cite:"SOP §5.5 Fuel Management · §8.5 · §8.7",
+ lead:"Fuel is always issued against a checkout record, and the benchmark is 4 litres per MT of biomass.",
+ b:`<div class="h">The rules</div><ul>
+ <li>No checkout, no fuel. Checkout is mandatory because invoices generate based on the checkout date.</li>
+ <li>Benchmark consumption is <b>4 litres per MT</b>. Anything above must be flagged.</li>
+ <li>Fuel receipts must be attached to manual fuel entries on the platform.</li>
+ <li>Grabber fuel is the exception — no checkout needed, create a manual fuel entry directly.</li></ul>
+ <div class="h">If fuel was already issued without checkout</div>
+ <p>The invoice will not generate. Create a <b>manual credit note</b> for the fuel entries so the charge can be adjusted and deducted from that account.</p>
+ <div class="h">If you forgot to attach the receipt</div>
+ <p>Raise a cancellation request with the Control Tower team. They mark the entry cancelled, then you create a fresh manual entry with the receipt attached.</p>
+ <div class="esc"><b>Escalation:</b> fuel consumption beyond benchmark goes to the Cluster Manager for approval. Entry cancellation goes to Control Tower.</div>`,
+ rel:["What is on the day closing checklist?","Who do I escalate fuel excess to?","How do I check a partner's payment status?"]},
+
+{k:["stacking","stack gap","pyramid","trapezium","sleepers","stack label"],cite:"SOP §5.3 Stacking · §2.7 Warehousing",
+ lead:"Stacking geometry, gaps and labelling are all fixed by SOP — they exist for fire and moisture control, not tidiness.",
+ b:`<div class="h">Geometry</div><ul>
+ <li><b>Pyramid</b> stacking for round bales, <b>trapezium</b> for rectangular bales.</li>
+ <li>Minimum <b>4-foot gap</b> between adjacent stacks.</li>
+ <li>Minimum <b>2-foot gap</b> between the bottom bale and the ground — use sleepers or pallets.</li></ul>
+ <div class="h">Covering and labelling</div><ul>
+ <li>Tarpaulin goes on immediately after stacking. Never leave bales exposed overnight.</li>
+ <li>Label every stack with: stack number, crop type, date of stacking, estimated tonnage, and moisture at inward.</li></ul>
+ <div class="h">Rotation</div>
+ <p>FIFO — oldest stacks dispatched first. During monsoon, prefer dry protected stacks for outward and prioritise high-moisture stacks for early dispatch.</p>
+ <div class="callout">Avoid over-stacking to hit a space target. Layout discipline is what keeps the 4-foot fire gaps real.</div>`,
+ rel:["What is the fire safety policy?","What extra checks apply during monsoon?","How does bale size affect trolleys?"]},
+
+{k:["moisture limit","reject moisture","high risk zone","how many bales test","8-10 bales"],cite:"SOP §5.2 Inward Process · §2.7 Warehousing",
+ lead:"Test a minimum of 8–10 bales from the outer exposed layer with a calibrated moisture meter, then accept or divert.",
+ b:`<ol><li>Sample <b>8–10 bales at random</b> from the outer exposed layer — that layer carries the highest moisture.</li>
+ <li>Use a calibrated moisture meter.</li>
+ <li><b>At or below the agreed limit:</b> accept and assign a stack zone.</li>
+ <li><b>Above the agreed limit:</b> divert to the <b>high-risk zone</b> — do not stack it.</li></ol>
+ <div class="h">High-risk zone handling</div><ul>
+ <li>Sun dry the material.</li><li>Run daily moisture checks.</li>
+ <li>Move to normal stacking only once it reaches a safe level.</li></ul>
+ <div class="callout">The acceptable limit is set per deal, not globally — check the agreed % on the aggregation deal before deciding. Moisture above the limit also triggers a quantity deduction at payment.</div>
+ <p>Record moisture % in the inward entry alongside farmer mobile, vehicle number, bale count and net weight. It becomes the stack label reference later.</p>`,
+ rel:["How is moisture deduction calculated?","What are the stacking gap rules?","Why was a delivery rejected by the customer?"]},
+
+{k:["auto-inward","auto inward","weighbridge not","not reflecting","gateway","wifi"],cite:"SOP §6.7 Inward & Outward on Platform · §5.6",
+ lead:"Start with connectivity — the weighbridge feed drops before the platform does.",
+ b:`<ol><li>Check internet connectivity at the bank.</li>
+ <li>Look at the <b>Wi-Fi gateway box light</b>. Green = connected. Red = disconnected.</li>
+ <li>If red, contact the weighbridge operator.</li>
+ <li>If connectivity is fine and entries still don't appear, it is a sync issue — raise it through Control Tower.</li></ol>
+ <div class="h">If you need a manual inward instead</div><ul>
+ <li>First verify the correct Equipment ID was entered at checkout.</li>
+ <li>For a past-dated entry, the equipment <b>must have been checked out on that date</b> — otherwise the entry will not save.</li></ul>
+ <div class="callout">Mismatches found at day closing are usually this, not a counting error. Check the gateway light before you start recounting receipts.</div>`,
+ rel:["What is on the day closing checklist?","Equipment isn't showing during checkout — why?","Who do I escalate a platform bug to?"]},
+
+{k:["escalate","escalation","who do i contact","level 1","control tower","kisko bolu"],cite:"SOP §12 Escalation Matrix",
+ lead:"Five levels, and the level is decided by what kind of fix is needed — not by how urgent it feels.",
+ b:`<ol><li><b>Warehouse Supervisor</b> — routine daily operations, equipment checkout and check-in, inward and outward, day closing.</li>
+ <li><b>Cluster Manager</b> — partner disputes, fuel excess approval, cross-bank equipment decisions, payment escalations.</li>
+ <li><b>Control Tower</b> — platform actions: void invoices, unverify records, create manual deals, walk-in deals, aggregation plans, data fixes.</li>
+ <li><b>Circle Manager</b> — multi-cluster coordination, strategic decisions, major escalations.</li>
+ <li><b>Dev / Engineering</b> — platform bugs, system errors, backend data fixes. Reached through CT, not directly.</li></ol>
+ <div class="h">Quick routing</div><ul>
+ <li>Void or unverify an invoice → Control Tower</li>
+ <li>Create a walk-in deal or aggregation plan → email CT</li>
+ <li>Cashflow not generating, server error → CT escalates to Dev</li>
+ <li>Partner payment dispute → Cluster Manager</li>
+ <li>Fuel excess beyond benchmark → Cluster Manager</li>
+ <li>Equipment damage or transfer → Cluster Manager</li></ul>`,
+ rel:["An invoice was verified by mistake — what now?","How do I get a walk-in deal created?","Why is cashflow not generating?"]},
+
+{k:["invoice verified by mistake","unverify","verified wrongly"],cite:"SOP §8.3 Common Mistakes · §12",
+ lead:"You cannot reverse this yourself — contact the Control Tower team.",
+ b:`<p>CT has access to unverify an invoice. Nobody at bank or cluster level does.</p>
+ <div class="h">Why verification is gated</div>
+ <p>Field verification is a mandatory control before any vendor payment. Once you mark an invoice verified you are confirming quantity, moisture, and fuel issued are all correct — so the platform treats it as payment-ready.</p>
+ <div class="callout">Before verifying, check the three things the SOP asks you to confirm: quantity, moisture %, and fuel issued. Adjustments like moisture deduction and fuel advance recovery should already be reflected.</div>
+ <div class="esc"><b>Escalation:</b> Control Tower (Level 3). If CT finds the cashflow itself is wrong, they void it and raise a manual invoice — that path runs through the dev team.</div>`,
+ rel:["Who do I escalate to for a data fix?","How is moisture deduction calculated?","How do I check payment status?"]},
+
+{k:["payment status","kitna paisa","paid","pending payment","pending status","utr","settlement view","cashflow not gener","what's remaining","whats remaining"],cite:"SOP §6.6 Cashflow, Payments & Settlement",
+ lead:"Three places to look, depending on whether you want invoice status, transfer status, or net payable.",
+ b:`<ol><li><b>Cashflow tab</b> → set Timeframe to 'All Data' → search partner → check invoice status: Generated, To be Generated, or Not Generated.</li>
+ <li><b>Payment tab</b> → Timeframe 'All Data' → search partner → check status Completed / Failed / Pending, and view total amount paid.</li>
+ <li><b>Settlement View tab</b> → search partner by mobile number → click the popup → see total payables, deductions, and net amount.</li></ol>
+ <div class="h">If status shows Pending</div><ul>
+ <li><b>UTR exists but status is Pending</b> — the payment was processed and the bank simply hasn't updated status yet. Nothing to do.</li>
+ <li><b>No UTR</b> — the payment is still being processed.</li></ul>
+ <div class="h">If cashflow isn't generating at all</div>
+ <p>Two common causes: bank details missing for that partner, or a platform bug. Check bank details first, then escalate to CT.</p>
+ <div class="callout">Payments are typically released bi-weekly after verified invoices are reviewed against cashflow. Bank transfer is the only payment mode.</div>`,
+ rel:["Why has a transporter invoice not generated?","How do I add and verify bank details?","Who handles a partner payment dispute?"]},
+
+{k:["transporter invoice","invoice not generated","bank details verify","passbook already attached"],cite:"SOP §8.9 · §6.2 Bank Details",
+ lead:"Verified bank details are a hard prerequisite — invoices will not generate without them.",
+ b:`<ol><li>Confirm the transporter's bank account has been <b>added and verified</b> on the platform, not just added.</li>
+ <li>If OCR verification fails for that particular bank, escalate to the support team.</li></ol>
+ <div class="h">If you see "passbook already attached to this account under Not Verified status"</div>
+ <p>That account is linked to a different agri-partner record. Steps:</p>
+ <ol><li>Search for duplicate records for the same person or vehicle owner.</li>
+ <li>Mark the incorrect profile as <b>invalid</b>.</li>
+ <li>Retain the profile that holds the verified bank account.</li></ol>
+ <div class="callout">Invalid records stay hidden from your main partner count — they only appear when you explicitly select the 'Invalid' filter. So duplicates can sit unnoticed for a long time.</div>`,
+ rel:["How do I check payment status?","How do I onboard a new agri-partner?","Who do I escalate a platform bug to?"]},
+
+{k:["onboard","new agri-partner","new farmer","add farmer","vendor","petrol pump","fpo","two locations","multiple farm","add the location","not visible"],cite:"SOP §6.2 Agri-Partner Management",
+ lead:"Go to the AgriPartner tab and add the partner — the one step people get wrong is location capture.",
+ b:`<ol><li>Open the <b>AgriPartner</b> tab.</li>
+ <li>Add the partner with the mandatory details: name, mobile number, farm location.</li>
+ <li>Capture farm location using <b>'Use Current Location'</b>. Not lat-long, not a Google pin. Stand in the field.</li></ol>
+ <div class="h">Special partner types</div><ul>
+ <li><b>Vendor:</b> onboard through AgriPartner and set interest as 'Vendor'.</li>
+ <li><b>Petrol pump:</b> onboard as a 'Company', not an individual.</li>
+ <li><b>FPO or external supplier:</b> onboard as a vendor, then email the CT team to create a walk-in deal.</li></ul>
+ <div class="h">Multiple farms</div>
+ <p>Use 'Add Location' in the profile, and label them 'Farm 1' and 'Farm 2' in Address Line 1 so they stay distinguishable.</p>
+ <div class="callout">Partner not visible in your bank? Search their mobile number in <b>Global Search</b> and transfer them to your biomass bank rather than creating a duplicate.</div>`,
+ rel:["Why did a location get flagged?","How do I find farmers who sold last season?","How do I get a walk-in deal created?"]},
+
+{k:["readiness checklist","pre-aggregation","before season","season start"],cite:"SOP §4 Pre-Aggregation Readiness Checklist",
+ lead:"Five blocks, all requiring Control Tower sign-off before the season starts.",
+ b:`<div class="h">Infrastructure</div><ul><li>Weighbridge installed, calibrated, connected to the platform</li>
+ <li>Fencing, gates, access roads working</li><li>Portacabin or office set up</li>
+ <li>Fire safety equipment — extinguishers, water tanks, sand buckets</li><li>CCTV and Wi-Fi operational</li></ul>
+ <div class="h">Equipment</div><ul><li>All balers, slashers, rakers, trolleys on site</li>
+ <li>Carnot devices installed and active on every machine</li><li>OEM readiness certificates obtained</li>
+ <li>Trial runs completed</li><li>Spares, lubricants, tools on site</li><li>Maintenance manpower available</li></ul>
+ <div class="h">Documentation</div><ul><li>All agri-partners onboarded</li><li>Aggregation deals created and signed</li>
+ <li>Aggregation plan approved on the platform</li><li>Farmer scheduling initiated</li></ul>
+ <div class="h">Manpower</div><ul><li>Warehouse supervisor assigned and trained</li><li>Rural sales person assigned</li>
+ <li>Gramin Bandhus assigned</li><li>Equipment operators hired or contracted</li></ul>
+ <div class="h">Safety &amp; communication</div><ul><li>Safety induction done for all staff</li>
+ <li>Emergency contacts displayed</li><li>WhatsApp groups set up</li></ul>
+ <div class="callout"><b>Timing:</b> equipment readiness must be complete at least 30 days before season. Failure to prepare equipment costs 5–10 aggregation days. All assets should be ready two weeks before season start.</div>`,
+ rel:["What's on the baler daily checklist?","How do I check the Carnot ping?","What is the plan target for this season?"]},
+
+{k:["baler checklist","tyre pressure","psi","slasher checklist","raker","trolley checklist","daily checklist"],cite:"SOP §7 Daily Equipment Checklists",
+ lead:"Each machine has its own daily checklist, and the tyre pressures differ — those are the numbers people get wrong.",
+ b:`<div class="h">Baler</div><ul><li>Clean machine after field operations, including pick-up guard and tine replacement</li>
+ <li>Replace shear bolt / chain lock during operations</li>
+ <li>Tyre pressure — <b>rear 32 PSI, pickup 45 PSI</b>; repair punctures</li>
+ <li>Tighten tyre and wheel screws</li><li>Visual inspection before and after operations</li></ul>
+ <div class="h">Slasher</div><ul><li>Clean after operations</li><li>Replace blades if damaged</li>
+ <li>Tighten blade fasteners</li><li>Grind blades <b>before</b> checkout</li><li>Visual inspection both ways</li></ul>
+ <div class="h">Raker</div><ul><li>Clean after operations</li><li>Tyre pressure <b>40 PSI</b>, repair punctures</li>
+ <li>Tighten hay rake stopper and raking tines</li><li>Visual inspection both ways</li></ul>
+ <div class="h">Hydraulic &amp; manual trolley</div><ul><li>Clean after operations</li>
+ <li>Daily check on the hydraulic 4-valve distributor</li><li>Lubrication including greasing</li>
+ <li>Check tractor hydraulic oil level</li><li>Tyre pressure and punctures</li>
+ <li>Tighten tyre and wheel screws once a day</li><li>Visual inspection both ways</li></ul>
+ <div class="callout">Standard baler operating pressure is <b>120 bar</b>. Operators complete these checklists; supervisors verify completion.</div>`,
+ rel:["How does changing baler brand affect us?","How do I check the Carnot ping?","What is the pre-season readiness checklist?"]},
+
+{k:["baler brand","mashio","krone","bale size","grabber"],cite:"SOP §7.5 Equipment Specifications",
+ lead:"Changing baler brand changes bale size, and that cascades through trolleys, grabbers and stacking.",
+ b:`<ul><li><b>Mashio</b> balers produce <b>3.5 ft</b> bales.</li><li><b>Krone</b> balers produce <b>5 ft</b> bales.</li></ul>
+ <p>Because of that difference you must verify trolley and grabber compatibility before switching brands.</p>
+ <div class="h">What is affected downstream</div><ul>
+ <li>Trolley type and capacity per trip</li><li>Grabber configuration for loading and unloading</li>
+ <li>Stacking pattern in the yard</li></ul>
+ <div class="callout">Treat a brand change as an ecosystem decision, not a procurement decision. It needs Cluster Manager involvement because it crosses equipment, transport and storage.</div>`,
+ rel:["What are the stacking gap rules?","What's on the baler daily checklist?","Who approves an equipment transfer?"]},
+
+{k:["morning routine","start of day","site walk"],cite:"SOP §5.1 Morning Routine",
+ lead:"Six checks, all before the first vehicle arrives.",
+ b:`<ol><li>Arrive before the first vehicle is expected.</li>
+ <li>Walk the site — check stacks for overnight smoke, collapse, or water ingress.</li>
+ <li>Verify the weighbridge is online and calibrated.</li>
+ <li>Check platform connectivity at the Wi-Fi gateway — green light means connected, red means a problem.</li>
+ <li>Review the day's schedule: expected deliveries, equipment deployments, aggregator assignments.</li>
+ <li>Confirm equipment checkout on the platform before anything goes to the field.</li></ol>
+ <div class="callout">The site walk is a fire control, not housekeeping. Overnight smoke is the earliest signal you get.</div>`,
+ rel:["What is the fire safety policy?","What is on the day closing checklist?","Auto-inward isn't reflecting — what do I check?"]},
+
+{k:["monsoon","rain","waterproof","drainage"],cite:"SOP §5.8 Monsoon Preparedness · §2.8 Outward",
+ lead:"Monsoon adds covering, drainage and dispatch-sequencing changes on top of the normal routine.",
+ b:`<ul><li>Additional tarpaulin covering and rope securing on all stacks.</li>
+ <li>Maintain drainage to prevent water logging in the yard.</li>
+ <li>Prioritise high-moisture stacks for early dispatch — they degrade fastest.</li>
+ <li>For outward loading, prefer dry protected stacks and avoid vulnerable ones.</li>
+ <li>Run extra waterproofing checks on tarpaulins as part of daily fire monitoring.</li></ul>
+ <div class="callout">Monsoon is the one time FIFO gets overridden on purpose — dispatch decisions follow stack condition, not just age.</div>`,
+ rel:["What are the stacking gap rules?","What is the fire safety policy?","Why was a delivery rejected by the customer?"]},
+
+{k:["rejected","rejection","customer rejected","contamination"],cite:"SOP §2.8 Delivery Operations — Outcomes",
+ lead:"Rejections are usually moisture or contamination, and there is a defined two-track response.",
+ b:`<div class="h">Common reasons</div><ul><li>High moisture</li><li>Soil or other contamination</li>
+ <li>Poor size consistency</li><li>Loose bales</li></ul>
+ <div class="h">What to do</div><ol>
+ <li>Arrange an alternate delivery so the customer's requirement is still met.</li>
+ <li>Assess the rejected material:<ul>
+   <li><b>Rework feasible</b> → sun dry, sieve, re-inspect → restack → reschedule dispatch.</li>
+   <li><b>Not feasible</b> → scrap it as per the disposal SOP.</li></ul></li></ol>
+ <div class="callout">Prevention sits at loading: correct material, balanced load, no contamination, rope tightening and tarpaulin. Dispatch is held until safety and documentation compliance is complete — <b>no dispatch without invoice and ASN</b>.</div>`,
+ rel:["What moisture level do I reject at?","What extra checks apply during monsoon?","How is moisture deduction calculated?"]},
+
+{k:["walk-in deal","deal types","pickup deal","transport deal","labour deal","equipment rental deal"],cite:"SOP §6.5 Aggregation Plan & Deals",
+ lead:"Seven deal types, and picking the wrong one is what causes most downstream invoice problems.",
+ b:`<ul><li><b>Aggregation Deal</b> — standard biomass procurement through an aggregator.</li>
+ <li><b>Walk-in Deal</b> — direct purchase from an FPO or vendor delivering to the warehouse. Request CT to create it.</li>
+ <li><b>Pickup Deal</b> — company arranges pickup from farmer or vendor location.</li>
+ <li><b>Outward Product Deal</b> — delivery to customer. Auto-creates draft deliveries from planned quantity and transfer dates.</li>
+ <li><b>Transport Deal</b> — transporter arrangement; captures distance, cost, vehicle and bank details for auto-invoice.</li>
+ <li><b>Equipment Rental Deal</b> — no attendance recording. Daily cashflow auto-generates, invoice at month end. Verify on time.</li>
+ <li><b>Labour Service Deal</b> — for operators and drivers. For different shift rates, create <b>separate deals per shift</b>.</li></ul>
+ <div class="callout">Draft deliveries under an Outward Product Deal are auto-created — review and edit them rather than creating deliveries manually.</div>
+ <div class="esc"><b>Escalation:</b> walk-in deals and aggregation plans are created by Control Tower on email request, not at bank level.</div>`,
+ rel:["How do I onboard an FPO?","Why has a transporter invoice not generated?","How do I create a schedule?"]},
+
+{k:["carnot","ping","telemetry"],cite:"SOP §5.4 Equipment Management · §11 Glossary",
+ lead:"Carnot is the telemetry device that tracks location, movement and productivity of field machinery.",
+ b:`<div class="h">How to verify it is live</div>
+ <ol><li>Open <b>Ledger</b>.</li><li>Go to <b>Work Done</b> and click the <b>(i)</b> icon.</li>
+ <li>Scroll to the bottom.</li><li>Read <b>Last Carnot Active Ping</b>.</li></ol>
+ <div class="h">Why it matters</div><ul>
+ <li>Carnot devices must be installed and active on all equipment before the season — it is a pre-aggregation checklist item.</li>
+ <li>Missing Carnot data is a daily exception report item during aggregation execution.</li>
+ <li>Diesel-versus-output analysis in the daily review depends on it.</li></ul>
+ <div class="callout">If a machine shows output but no Carnot ping, treat it as a data integrity exception and report it the same day rather than at month end.</div>`,
+ rel:["What is the pre-season readiness checklist?","What is the fuel benchmark per MT?","I forgot to check in equipment — what now?"]},
+
+{k:["scheduling","create schedule","add schedule","village scheduling","clustered","unscheduled","uprooting"],cite:"SOP §6.4 Scheduling · §2.6 Planning",
+ lead:"Schedules live under an Aggregation Plan — if you can't see 'Add Schedule', the plan probably doesn't exist.",
+ b:`<div class="h">Creating schedules</div>
+ <p>If the 'Add Schedule' option isn't showing, the Aggregation Plan is missing. Email the CT team to create one.</p>
+ <div class="h">Village-based</div>
+ <p>Use Search in the scheduling tab and enter the village name to see scheduled farmers for that village.</p>
+ <div class="h">Clustered</div>
+ <p>Open Map View and schedule nearby unscheduled farmers by connecting them on the map. Note: 'Show Nearby Unscheduled Farmers' only shows farmers near the location you're scheduling at — not every unscheduled farmer on the platform.</p>
+ <div class="h">Activity missing</div>
+ <p>If uprooting isn't showing, check the agri-partner's Aggregation Deal has the 'Uprooter' activity added.</p>
+ <div class="callout">Schedule villages <b>in phases, not simultaneously</b>. Prioritise on GIS harvest readiness plus field confirmation. Planning must finish before harvest begins — no aggregation execution without an approved plan.</div>`,
+ rel:["How do I get an aggregation plan created?","Which agri-partners can I book today?","How do I find farmers who sold last season?"]},
+
+{k:["sold biomass filter","find farmers","last season","global search","invalid filter"],cite:"SOP §6.2 Agri-Partner Management",
+ lead:"Three different lookups depending on what you're after.",
+ b:`<ul><li><b>Farmers who sold biomass last season:</b> AgriPartner tab → apply the <b>'Sold Biomass'</b> filter from All Tags.</li>
+ <li><b>Farmer not visible in your bank:</b> search their mobile number in <b>Global Search</b>, then transfer them to your biomass bank.</li>
+ <li><b>Invalid farmers:</b> only appear when you explicitly select the 'Invalid' filter — they are excluded from the main count.</li></ul>
+ <div class="h">Reading the map</div>
+ <p>If a cluster of farmers shows as a number on the map, hover over that number to see individual farmer details in a pop-up.</p>
+ <div class="callout">Past sellers are your most reliable group when booking a new season — start there before chasing fresh onboarding.</div>`,
+ rel:["Which agri-partners can I book today?","How do I onboard a new agri-partner?","Why did a location get flagged?"]},
+
+{k:["asn","scn","utr","grn","pod","ved","fifo","loto","tph","gcv","what does","abbreviation","full form"],cite:"SOP §11 Glossary & Common Terms",
+ lead:"The abbreviations that come up most often at a biomass bank:",
+ b:`<ul><li><b>ASN</b> — Advance Shipment Notice. Customer-portal reference for dispatched material. Vehicle must not dispatch without invoice and ASN.</li>
+ <li><b>SCN</b> — Shipment Control Number, a customer portal reference.</li>
+ <li><b>GRN</b> — Goods Receipt Note. The customer's confirmation of a received delivery; payment terms may run from GRN date.</li>
+ <li><b>POD</b> — Proof of Delivery. Customer weighbridge slip is preferred.</li>
+ <li><b>UTR</b> — Unique Transaction Reference, the bank payment reference.</li>
+ <li><b>FIFO</b> — First In, First Out. Oldest stock dispatched first.</li>
+ <li><b>Carnot</b> — equipment telemetry device.</li>
+ <li><b>CT</b> — Control Tower, the central ops team.</li>
+ <li><b>VED Matrix</b> — Vital / Essential / Desirable framework, 25–26 parameters, used for site selection.</li>
+ <li><b>LOTO</b> — Lock-Out / Tag-Out, safety procedure for equipment maintenance.</li>
+ <li><b>GCV</b> — Gross Calorific Value in kcal/kg. <b>TPH</b> — tonnes per hour.</li>
+ <li><b>FOM</b> — Fermented Organic Manure, sometimes bartered against biomass.</li>
+ <li><b>High-Risk Zone</b> — area for storing high-moisture biomass while drying.</li></ul>`,
+ rel:["Who do I escalate to?","How do I check payment status?","What is the fire safety policy?"]},
+
+{k:["two farmers","one trolley","both farmer","same trolley","two crops","multiple crops","identify the product","2 crops"],cite:"SOP §5.2.1 Inward Process",
+ lead:"Enter both farmer mobile numbers at the weighbridge with nothing between them.",
+ b:`<p>No spaces, no commas, no special characters between the two numbers. The platform splits the record correctly on its own.</p>
+ <div class="h">Related: multiple crops arriving together</div>
+ <p>While recording inward at the weighbridge, add the product <b>Deal Number</b> — available on the platform under Crop or Deal IDs — to identify which product is being inwarded.</p>
+ <div class="callout">Getting this wrong at entry is the root cause of most 'wrong farmer on inward' corrections, which become CT tickets once invoices generate.</div>`,
+ rel:["I recorded inward on the wrong farmer — how do I fix it?","How do I identify the product when multiple crops arrive?","What is on the day closing checklist?"]},
+
+{k:["village filter","filter in scheduling","filter by village","search by village"],cite:"SOP §6.4 Scheduling",
+ lead:"Yes — village filtering already exists, through Search rather than a separate filter chip.",
+ b:`<p>In the scheduling tab, use the <b>Search</b> option and enter the village name. The system displays the scheduled farmers for that village.</p>
+ <div class="callout">People miss this because they look for it in the filter row. It is search-driven, not filter-driven.</div>
+ <div class="h">Related scheduling views</div><ul>
+ <li><b>Map View</b> lets you schedule nearby unscheduled farmers by connecting them on the map.</li>
+ <li>'Show Nearby Unscheduled Farmers' only shows farmers near the location you are scheduling at — not everyone unscheduled on the platform. Move to the area to see its farmers.</li></ul>`,
+ rel:["'Add Schedule' option isn't showing.","How should the team schedule farmers in a clustered way?","Agri-partner isn't showing in the scheduling tab."]},
+
+{k:["gst","vendor gst","update gst"],cite:"SOP §6.2 Agri-Partner Management",
+ lead:"Update GST from the partner's Edit Location screen, not from a separate tax section.",
+ b:`<ol><li>Go to the <b>AgriPartner</b> tab.</li><li>Search for the required agri-partner.</li>
+ <li>Open <b>Edit Location</b>.</li><li>Update the GST details there and save.</li></ol>
+ <div class="callout">GST sits under location because it is tied to the registered place of business, so a partner with two locations can carry different details per location.</div>`,
+ rel:["How do I onboard a vendor?","Should we onboard a petrol pump as an individual or a company?","Bank details error — passbook already attached."]},
+
+{k:["equipment-wise output","equipment wise","slasher-wise","baler-wise","output on platform"],cite:"SOP §6.1 Login & Navigation",
+ lead:"It's on the Home tab — scroll down to the Equipment-wise Output section.",
+ b:`<p>Output is broken out by machine category: Slasher-wise Output, Baler-wise Output, and the other equipment types.</p>
+ <div class="h">If numbers look wrong</div><ul>
+ <li>Check the Carnot device is pinging — Ledger → Work Done (i icon) → scroll down → Last Carnot Active Ping.</li>
+ <li>Missing Carnot data is a same-day exception report item, not a month-end reconciliation item.</li></ul>`,
+ rel:["How do I know whether the Carnot device is working?","Carnot isn't active — how do I verify the aggregator's work?","Where can I see fuel consumed by an aggregator's equipment?"]},
+
+{k:["0-5","0–5","periphery","distance band","5-10 km","10 km","readiness on platform"],cite:"SOP §6.5 Aggregation Plan",
+ lead:"Operations tab → open the active Aggregation Plan → Agri-partner readiness.",
+ b:`<p>That section gives you, per distance band (0–5 km, 5–10 km, 10+ km):</p>
+ <ul><li>Farmer count and total acreage</li><li>How many have flagged locations</li>
+ <li>How many are missing bank details</li><li>How many are missing acreage</li><li>How many are fully qualified</li></ul>
+ <div class="callout">Use the distance filter to decide where to push onboarding. Volume close to the bank cuts haulage cost more than extra acreage far out.</div>`,
+ rel:["Which agri-partners can I book today?","Why is booking still at 0%?","How much acreage is blocked by missing bank details?"]},
+
+{k:["rental deal","attendance for rental","rented equipment","night shift","day shift","different rates","overtime"],cite:"SOP §6.5 Deal Types",
+ lead:"No — equipment rental deals do not need attendance recorded.",
+ b:`<ul><li>Daily cashflow generates automatically for the rented equipment.</li>
+ <li>The invoice generates at the end of the month.</li>
+ <li>Your job is to <b>verify it on time</b> so the partner gets paid.</li></ul>
+ <div class="callout">This is the opposite of a Labour Service Deal, where attendance drives everything. Mixing the two up is what causes 'why hasn't he been paid' escalations.</div>
+ <div class="h">Different rates per shift</div>
+ <p>A driver working day shift and overtime at night needs <b>separate Labour Service Deals per shift</b> with their agreed rates. Check in and out against the right shift and deal — the platform then keeps shift-wise attendance and generates matching cashflows and invoices.</p>`,
+ rel:["What are the deal types?","How do I check payment status?","Attendance was marked full day instead of half day."]},
+
+{k:["grabber","manual fuel entry","repos","petrol pump field","aggregator not found"],cite:"SOP §5.5 Fuel Management",
+ lead:"Grabber fuel is the one exception — no checkout needed, create the manual fuel entry directly.",
+ b:`<div class="h">Grabber</div><p>You do not need to check out a grabber. Create a manual fuel entry against it directly.</p>
+ <div class="h">"Aggregator not found" on manual fuel entry</div>
+ <p>The aggregator has no location set. Add the location for that aggregator and tag it to the correct warehouse.</p>
+ <div class="h">Wrong REPOS entry</div>
+ <p>You can create a manual entry against the wrong REPOS entry — the petrol pump field is not mandatory in that case.</p>
+ <div class="callout">For everything other than a grabber, checkout is mandatory before fuel is issued, because invoices generate off the checkout date. Benchmark is 4 litres per MT.</div>`,
+ rel:["I forgot to attach the fuel receipt in a manual fuel entry.","We gave diesel to a transporter without checkout.","Where can I see fuel consumed by an aggregator's equipment?"]},
+
+{k:["invalid farmer","invalid count","master data count","gram bandhu count"],cite:"SOP §6.2",
+ lead:"No — invalid-marked farmers are excluded from the main agri-partner count.",
+ b:`<p>They only appear when you explicitly select the <b>'Invalid'</b> filter.</p>
+ <div class="callout"><b>This explains most count mismatches.</b> If Gramin Bandhu shows 656 onboarded and the platform shows 562, check invalid-marked records and records sitting in another biomass bank or unallocated before assuming data loss.</div>
+ <div class="h">To find a missing partner</div>
+ <p>Search their mobile number in <b>Global Search</b>. They are usually in another biomass bank or unallocated — transfer them to yours rather than creating a duplicate.</p>`,
+ rel:["Agri-partner onboarded but not visible in my bank.","Bank details error — passbook already attached.","How do I find farmers who sold last season?"]},
+
+{k:["carnot is not active","carnot not active","verify work"],cite:"SOP §2.7 Aggregation Execution",
+ lead:"If Carnot isn't active, machine data can't verify the work — you have to confirm with the farmer directly.",
+ b:`<ol><li>Call the assigned farmer.</li>
+ <li>Confirm whether the assigned work is <b>completed, in progress, or pending</b>.</li>
+ <li>Record it, and raise the inactive Carnot as a data integrity exception the same day.</li></ol>
+ <div class="callout">Do not approve work done purely on the aggregator's word when Carnot is down. Diesel-versus-output analysis in the daily review depends on this data, so a gap here becomes a payment dispute later.</div>`,
+ rel:["How do I know whether the Carnot device is working?","Where can I see equipment-wise output?","Who do I escalate to?"]},
+
+{k:["draft deliveries","why draft"],cite:"SOP §6.7",
+ lead:"Draft deliveries are created automatically when an Outward Product Deal is created — nothing has gone wrong.",
+ b:`<p>The system generates them from the planned quantity and transfer dates specified in the deal.</p>
+ <p>Review and edit the drafts as needed rather than creating deliveries manually.</p>
+ <div class="callout">Creating manual deliveries alongside the auto-generated drafts is what causes double-counting in outward totals.</div>`,
+ rel:["What are the deal types?","How do I check payment status?","Why was a delivery rejected by the customer?"]},
+
+{k:["site selection","new bank","ved matrix","land"],cite:"SOP §3 Site Selection · §2.5 Infrastructure & Purchase",
+ lead:"A seven-step evaluation ending in mandatory tri-party approval.",
+ b:`<ol><li>Identify potential locations from catchment crop availability.</li>
+ <li>Field-visit the shortlisted sites.</li>
+ <li>Evaluate each on <b>25–26 VED parameters</b>.</li>
+ <li>Parameters cover road and vehicle access, ground condition (hard, level, well-drained), power availability, flood and fire risk, local security, and proximity to the farmer catchment.</li>
+ <li>Infrastructure Manager reviews all evaluations and shortlists.</li>
+ <li><b>Tri-party approval</b> — Infrastructure Head + Business Head + Safety. Mandatory, no exceptions.</li>
+ <li>Land agreement executed and the site is locked as an official biomass bank.</li></ol>
+ <p>If no parcel meets criteria, scout adjacent villages and repeat the cycle.</p>
+ <div class="callout">Typical bank capacity is <b>8,000–10,000 MT per season</b> with a 25–50 km catchment. Infrastructure development runs ~45 days and the full cycle ~90 days, with 15% buffer capacity in machines and space mandatory.</div>`,
+ rel:["What is the pre-season readiness checklist?","How long does a new bank take to set up?","Who approves a new site?"]}
+];
+
+/* ---------- DATA mode entries ---------- */
+const KBDATA=[
+{k:["book today","can i book","qualified","ready to book"],cite:"Aggregation Plan 2159 · Agri-Partner data · live",
+ lead:"16 agri-partners are fully qualified — about 168.5 acres — and can be booked right now with no data fixes.",
+ b:`<p>Another <b>8 partners</b> have sold biomass to this bank before, which makes them your most reliable starting group. None of the 8 are booked yet.</p>
+ <p>Fastest path to target: book those 8 first, then work through the remaining qualified partners.</p>
+ <div class="callout">Per SOP §6.2, past sellers can be pulled up directly with the 'Sold Biomass' filter under All Tags.</div>`,
+ rel:["Why is booking still at 0%?","How much acreage is blocked by missing bank details?","How do I create a schedule?"]},
+{k:["0%","why is booking","behind","booking readiness"],cite:"Aggregation Plan 2159 · Kharif Paddy 2026",
+ lead:"Booking is at 0% because no acreage has been committed yet — the plan is open but nobody is booked against the 3,250 MT target.",
+ b:`<p>Of 731 onboarded partners, only 16 are fully qualified. The rest are blocked by three fixable gaps:</p>
+ <ul><li><b>272 partners</b> with flagged locations — roughly 2,236 acres</li>
+ <li><b>414 partners</b> missing bank accounts — roughly 4,847 acres</li>
+ <li><b>29 partners</b> with no acreage captured</li></ul>
+ <p>You have 109 days before the season starts, so the gaps are recoverable. Bank details are the largest single blocker by acreage.</p>
+ <div class="callout">SOP §4.3 requires all agri-partners onboarded, deals signed and the plan approved before the season — this plan is not yet at that state.</div>`,
+ rel:["Why did a location get flagged?","How do I add and verify bank details?","Which agri-partners can I book today?"]},
+{k:["bank detail","missing bank","673","414"],cite:"Agri-Partner data · updated 2 min ago",
+ lead:"673 agri-partners on this bank have no bank details. Within the current Kharif plan, 414 of them — about 4,847 acres — are otherwise ready.",
+ b:`<p>Those 414 already have acreage captured and an accurate location, so bank details are the only thing holding them back.</p>
+ <p>This is the single biggest unlock on the bank. Clearing it converts more acreage than fixing locations or acreage.</p>
+ <div class="callout">Per SOP §6.2, the account must be <b>added and verified</b>, not just added. If OCR verification fails for a particular bank, escalate to support. If you see 'passbook already attached… Not Verified', you have a duplicate profile.</div>`,
+ rel:["Why has a transporter invoice not generated?","How do I check payment status?","Why is booking still at 0%?"]},
+{k:["location flagged","271","272"],cite:"Agri-Partner data · GIS validation",
+ lead:"271 partners are currently flagged on this bank, covering about 2,236 acres.",
+ b:`<p>Flagged means the captured GPS point either falls in a built-up area or sits within 20 metres of another location — so distance-from-bank and routing cannot be trusted.</p>
+ <p>Re-capture on-farm using 'Use Current Location' from the partner's detail page. The validation job re-runs at 9:00 PM, so corrections show the next morning.</p>
+ <div class="callout">SOP §10.3: if it stays flagged, edit the location, change the Address Line text slightly, and save again to force re-processing.</div>`,
+ rel:["How do I avoid location flagging?","Why is booking still at 0%?","How do I onboard a new agri-partner?"]},
+{k:["suspense","stuck deliveries"],cite:"Deliveries · Inward · Gokavaram",
+ lead:"7 deliveries are sitting in Suspense — their weight or quality data doesn't reconcile.",
+ b:`<p>Usual causes: a missing tare weight, a weighbridge reading that didn't sync, or a bale count mismatch.</p>
+ <p>They don't count toward received quantity, so the 614.87 MT total is understated by whatever they hold.</p>
+ <div class="callout">Per SOP §6.7, check the Wi-Fi gateway light first — red means the weighbridge feed is disconnected and that is the most common cause.</div>`,
+ rel:["Auto-inward isn't reflecting — what do I check?","What is on the day closing checklist?","I recorded inward on the wrong farmer — how do I fix it?"]},
+{k:["maize","this week","quantity received","how much came"],cite:"Deliveries · Inward · 17–19 May",
+ lead:"Maize inward is running about 14–15 bales per trip, with net weights between 1,570 and 2,800 kg.",
+ b:`<p>All are Completed and all came through seller SATTI BABU. Bank total across all products stands at <b>614.87 MT over 238 deliveries and 3,299 bales</b>.</p>
+ <p>For a day-by-day split, filter Inward by date — I keep answers to summaries.</p>`,
+ rel:["Why are 7 deliveries in suspense?","What moisture level do I reject at?","What is the plan target for this season?"]},
+{k:["inactive","tractor","equipment","125"],cite:"Equipments · Gokavaram",
+ lead:"This bank has 125 equipment records, and a handful of tractors are marked Inactive.",
+ b:`<p>That includes two Guttula veera krishna units at Vadisaleru, each carrying a reason flag you can open from the row.</p>
+ <p>Inactive equipment stays out of scheduling, so if aggregation capacity looks short this is worth clearing before the season.</p>
+ <div class="callout">SOP §4.2 requires all balers, slashers, rakers and trolleys on site with active Carnot devices and completed trial runs at least 30 days before season.</div>`,
+ rel:["Equipment isn't showing during checkout — why?","How do I check the Carnot ping?","What is the pre-season readiness checklist?"]},
+{k:["target","3250","3,250"],cite:"Aggregation Plan 2159",
+ lead:"The plan targets 3,250 MT of rice straw over a 30-day window, 15 Nov to 15 Dec.",
+ b:`<p>Against 7,243 acres onboarded on this bank, the target is comfortably coverable on paper — the constraint is data completeness, not land.</p>
+ <div class="callout">A typical biomass bank handles 8,000–10,000 MT per season (SOP §1), so this plan is well inside capacity.</div>`,
+ rel:["Which agri-partners can I book today?","Why is booking still at 0%?","How do I create a schedule?"]},
+{k:["5 km","within","near","nearby","distance"],cite:"Agri-Partner data · live",
+ lead:"Inside 5 km of Gokavaram there are only a few sell-biomass partners.",
+ b:`<ul><li><b>K prasad</b> — 3.31 km, 7 acres, rice</li><li><b>Indra</b> — 3.09 km, 2 acres, rice</li></ul>
+ <p>Both were onboarded through Gramin Bandhu and both are also interested in FOM.</p>
+ <p>Most of your supply sits in the 7–10 km band around Kothapalle. If you need volume close in, that 5–10 km ring is where to push onboarding.</p>`,
+ rel:["Which agri-partners can I book today?","How do I find farmers who sold last season?","How do I create a schedule?"]}
+];
+
+const FALLBACK={cite:"Scope check",
+ lead:"That's outside what I can answer.",
+ b:`<p>I work from two sources only:</p>
+ <ul><li>The <b>Consolidated SOP v1.0</b> — biomass bank operations, platform procedures, common mistakes, escalation.</li>
+ <li><b>This bank's live data</b> — agri-partners, aggregation plan, deliveries, equipment.</li></ul>
+ <p>Try rephrasing, or pick one of the suggestions. For anything outside the SOP, follow the escalation matrix in §12.</p>`,
+ rel:["What is the fire safety policy?","Who do I escalate to?","How do I check payment status?"]};
+
+
+
+/* ---------------- state ---------------- */
+const MAX=5;
+let turns=0,busy=false,mode='sop',big=false;
+const $=id=>document.getElementById(id);
+const ARROW='<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg>';
+function esc(s){return s.replace(/"/g,'&quot;')}
+
+function emptyHTML(){
+  const isSop=mode==='sop';
+  const list=isSop?TOP5_SOP:TOP5_DATA;
+  const shown=big?list:list.slice(0,3);
+  const more=(!big&&list.length>3)?`<button class="morebtn" onclick="toggleBig()">Show ${list.length-3} more + browse by topic</button>`:'';
+  const themes=isSop?`<div class="themes">
+    ${THEMES.map((t,i)=>`<button class="tchip ${openTheme===i?'on':''}" onclick="toggleTheme(${i})">${t.t}</button>`).join('')}
+    ${openTheme!==null?`<div class="tlist">${THEMES[openTheme].qs.map(q=>`<button class="sug" onclick="ask(this)">${q}</button>`).join('')}</div>`:''}
+    </div>`:'';
+  return `<h2 class="eh">${isSop?'What your colleagues are asking…':"What's happening at this bank"}</h2>
+    <div class="qlist">${shown.map((r,i)=>`<button class="qrow" onclick="ask(this)" data-q="${esc(r.q)}">
+      <span class="n">${i+1}</span><span class="q">${r.q}</span><span class="ar">${ARROW}</span></button>`).join('')}</div>
+    ${more}${themes}`;
+}
+function renderEmpty(){if(turns===0)$('body').innerHTML=emptyHTML()}
+function toggleTheme(i){openTheme=(openTheme===i?null:i);renderEmpty()}
+function toggleBig(){big=!big;$('panel').classList.toggle('big',big);
+  $('expandBtn').title=big?'Collapse':'Expand';renderEmpty()}
+function setMode(m){mode=m;openTheme=null;
+  $('m-sop').classList.toggle('on',m==='sop');$('m-data').classList.toggle('on',m==='data');
+  $('input').placeholder = m==='sop'?'Ask in English, हिंदी, मराठी or Hinglish…':'Ask about partners, plan, deliveries, equipment…';
+  renderEmpty()}
+function resetChat(){turns=0;busy=false;mode='sop';openTheme=null;
+  $('m-sop').classList.add('on');$('m-data').classList.remove('on');
+  $('input').value='';$('input').disabled=false;$('mic').disabled=false;$('send').disabled=true;
+  $('hint').textContent='Enter to send';cancelVoice();stopStatus();$('body').innerHTML=emptyHTML()}
+function resetAll(){big=false;$('panel').classList.remove('big');closePanel()}
+function openPanel(){$('panel').classList.add('open');$('bubble').classList.add('hidden');$('lhint').classList.remove('show');
+  setTimeout(()=>$('input').focus(),200)}
+function closePanel(){$('panel').classList.remove('open');$('bubble').classList.remove('hidden');resetChat()}
+function grow(t){t.style.height='auto';t.style.height=Math.min(t.scrollHeight,80)+'px';
+  $('send').disabled=!t.value.trim()||busy||turns>=MAX}
+function keys(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();if(!$('send').disabled)send()}}
+function ask(btn){$('input').value=btn.dataset.q||btn.textContent.trim();send()}
+function match(q){const s=q.toLowerCase(),pool=mode==='sop'?KB.concat(KBDATA):KBDATA.concat(KB);
+  for(const e of pool){if(e.k.some(k=>s.includes(k)))return e}return FALLBACK}
+
+const THUMB_UP='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 21V9.5l4.2-6.1a1.6 1.6 0 0 1 2.9 1v4.1h4.4a2 2 0 0 1 2 2.4l-1.4 6.6a2 2 0 0 1-2 1.5H7z"/><path d="M7 9.5H4.6A1.6 1.6 0 0 0 3 11.1v8.3A1.6 1.6 0 0 0 4.6 21H7"/></svg>';
+const THUMB_DOWN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3v11.5l-4.2 6.1a1.6 1.6 0 0 1-2.9-1v-4.1H5.5a2 2 0 0 1-2-2.4l1.4-6.6A2 2 0 0 1 6.9 3H17z"/><path d="M17 14.5h2.4A1.6 1.6 0 0 0 21 12.9V4.6A1.6 1.6 0 0 0 19.4 3H17"/></svg>';
+
+function userHTML(q,viaVoice){
+  return `<div class="msg user"><div class="txt">${viaVoice?'<span class="vtag">🎙 BY VOICE · HINGLISH</span>':''}${q.replace(/</g,'&lt;')}</div></div>`;
+}
+function aiHTML(e){
+  const rel=(e.rel&&e.rel.length&&turns<MAX-1)?`<div class="related"><div class="rl">Related</div>
+    ${e.rel.map(r=>`<button onclick="ask(this)">${r}</button>`).join('')}</div>`:'';
+  return `<div class="msg"><div class="ans"><p class="lead">${e.lead}</p>${e.b}
+    <div class="cite"><b>Source:</b> ${e.cite}</div>
+    <div class="fbrow"><span class="fbq">Was this helpful?</span>
+      <button class="thumb up" title="Helpful" onclick="rate(this,1)">${THUMB_UP}</button>
+      <button class="thumb down" title="Not helpful" onclick="rate(this,0)">${THUMB_DOWN}</button>
+      <span class="thx">Thanks — noted.</span>
+      <button class="copyb" onclick="copyA(this)">Copy</button></div>
+    ${rel}</div></div>`;
+}
+function rate(btn,good){const row=btn.closest('.fbrow');
+  row.querySelectorAll('.thumb').forEach(t=>t.classList.remove('on'));btn.classList.add('on');
+  const t=row.querySelector('.thx');t.textContent=good?'Thanks — noted.':'Thanks — we’ll review this.';
+  t.classList.add('on');row.querySelector('.fbq').style.display='none'}
+function copyA(b){const t=b.closest('.ans').innerText;navigator.clipboard&&navigator.clipboard.writeText(t);
+  b.textContent='Copied';setTimeout(()=>b.textContent='Copy',1500)}
+
+/* ---------------- loading ---------------- */
+const LOADERS=[
+ {k:["schedul","uprooting","unscheduled","clustered","village"],m:["Understanding what you need…","Requesting the scheduling process details…","Checking how schedules link to the aggregation plan…"]},
+ {k:["flag","location","lat long","9 pm","gis"],m:["Understanding what you need…","Checking the location validation rules…","Looking at how the 9 PM job works…"]},
+ {k:["moisture","deduction","₹","rate per"],m:["Understanding what you need…","Pulling the deduction formula…","Working through the example…"]},
+ {k:["inward","trolley","weighbridge","two farmers","two crops","wrong farmer"],m:["Understanding what you need…","Checking the inward recording process…","Looking at what changes once invoices are generated…"]},
+ {k:["fuel","diesel","grabber","repos","litre"],m:["Understanding what you need…","Checking the fuel management rules…","Looking up the benchmark and exceptions…"]},
+ {k:["payment","paid","pay him","cashflow","utr","settlement","invoice","unverify","passbook","bank detail","shift","rates"],m:["Understanding what you need…","Requesting payment and settlement steps…","Checking who can make this correction…"]},
+ {k:["equipment","checkout","tractor","carnot","baler","slasher","raker","attendance","hp"],m:["Understanding what you need…","Checking the equipment checkout rules…","Verifying the activity and type mapping…"]},
+ {k:["fire","smoke","temperature","safety","stack","monsoon"],m:["Understanding what you need…","Pulling the fire safety section…","Checking the daily monitoring routine…"]},
+ {k:["onboard","vendor","petrol pump","fpo","farmer","gst","invalid"],m:["Understanding what you need…","Checking the onboarding steps…","Looking at the special partner types…"]},
+ {k:["escalat","who do i","control tower","level"],m:["Understanding what you need…","Checking the escalation matrix…","Matching this to the right level…"]}
+];
+const LOAD_DEFAULT=["Understanding what you need…","Going through the SOP…","Putting the answer together…"];
+const LOAD_DATA=["Understanding what you need…","Reading the aggregation plan…","Summarising what I found…"];
+function loadersFor(q){if(mode==='data')return LOAD_DATA;const s=q.toLowerCase();
+  for(const l of LOADERS){if(l.k.some(k=>s.includes(k)))return l.m}return LOAD_DEFAULT}
+let loadTimer=null;const STEP=1700;
+function startStatus(q){const msgs=loadersFor(q);let i=0;
+  $('statusbar').classList.add('on');$('stxt').innerHTML=`<span>${msgs[0]}</span>`;
+  loadTimer=setInterval(()=>{i++;if(i>=msgs.length){clearInterval(loadTimer);return}
+    $('stxt').innerHTML=`<span>${msgs[i]}</span>`},STEP)}
+function stopStatus(){clearInterval(loadTimer);$('statusbar').classList.remove('on');$('stxt').innerHTML=''}
+
+function send(viaVoice){
+  const q=$('input').value.trim();if(!q||busy||turns>=MAX)return;
+  const b=$('body');if(turns===0)b.innerHTML='';
+  b.insertAdjacentHTML('beforeend',userHTML(q,viaVoice));
+  $('input').value='';grow($('input'));busy=true;$('send').disabled=true;
+  startStatus(q);b.scrollTop=b.scrollHeight;
+  setTimeout(()=>{stopStatus();b.insertAdjacentHTML('beforeend',aiHTML(match(q)));
+    turns++;busy=false;if(turns>=MAX)lockOut();else $('input').focus();
+    b.scrollTop=b.scrollHeight},STEP*2+900);
+}
+function lockOut(){
+  $('body').insertAdjacentHTML('beforeend',`<div class="limit">
+    <div class="t">That's 5 questions — the limit for one chat</div>
+    <div class="d">Start a new chat to keep going. Nothing here is saved, so copy anything you still need.</div>
+    <div class="row"><button onclick="resetChat()">Start a new chat</button>
+    <button class="ghost" onclick="copyAll()">Copy conversation</button></div></div>`);
+  $('input').disabled=true;$('mic').disabled=true;$('send').disabled=true;
+  $('hint').textContent='Question limit reached';$('body').scrollTop=$('body').scrollHeight}
+function copyAll(){navigator.clipboard&&navigator.clipboard.writeText($('body').innerText)}
+
+/* ---------------- voice ---------------- */
+const SPOKEN="Fire safety ka policy kya hai?";
+let vTimer;
+$('wave').innerHTML=Array.from({length:13},(_,i)=>`<i style="animation-delay:${i*.07}s"></i>`).join('');
+function startVoice(){if(turns>=MAX)return;
+  $('voice').classList.add('open');$('mic').classList.add('live');$('partial').textContent='';
+  $('vdet').classList.remove('on');$('vlbl').textContent='Listening… speak naturally, mixed languages are fine';
+  let i=0;vTimer=setInterval(()=>{i+=2;$('partial').textContent=SPOKEN.slice(0,i);
+    if(i>8)$('vdet').classList.add('on');
+    if(i>=SPOKEN.length){clearInterval(vTimer);$('vlbl').textContent='Got it — send, or tap the text to edit'}},60)}
+function cancelVoice(){clearInterval(vTimer);$('voice').classList.remove('open');$('mic').classList.remove('live')}
+function acceptVoice(){const t=$('partial').textContent;cancelVoice();if(t){$('input').value=t;grow($('input'));send(true)}}
+
+/* ---------------- demos ---------------- */
+function demoAnswer(){openPanel();resetChat();
+  const b=$('body');b.innerHTML='';
+  const q="Two farmers' bales came in one trolley — how do I record the inward?";
+  b.insertAdjacentHTML('beforeend',userHTML(q));
+  b.insertAdjacentHTML('beforeend',aiHTML(match(q)));turns=1}
+function demoVoice(){openPanel();resetChat();setTimeout(startVoice,300)}
+function demoLimit(){openPanel();resetChat();
+  const qs=["Two farmers' bales came in one trolley — how do I record the inward?",
+   "I updated farmers' locations yesterday and now they all show flagged. Why?",
+   "By mistake I recorded the inward on the wrong farmer account.",
+   "The invoice was verified by mistake. How can I unverify it?",
+   "₹500 was deducted as moisture deduction — how was that calculated?"];
+  const b=$('body');b.innerHTML='';turns=0;
+  qs.forEach(q=>{b.insertAdjacentHTML('beforeend',userHTML(q));b.insertAdjacentHTML('beforeend',aiHTML(match(q)));turns++});
+  turns=MAX;lockOut()}
+
+resetChat();
+setTimeout(()=>$('lhint').classList.add('show'),700);
+setTimeout(()=>$('lhint').classList.remove('show'),4200);
+</script>
+</body>
+</html>
